@@ -2,6 +2,12 @@
 
 Deploy things!
 
+## Installing
+
+```bash
+$ npm install -g dropper
+```
+
 ## Platforms
 
 Dropper is built to be extensible. The first platform supported is OpsWorks,
