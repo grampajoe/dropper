@@ -1,6 +1,6 @@
 var should = require('should'),
     sinon = require('sinon'),
-    deploy = require('../lib/deploy'),
+    deploy = require('../lib/dropper'),
     Deployer = require('../lib/deployer');
 
 describe('deploy', function() {

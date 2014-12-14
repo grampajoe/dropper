@@ -1,8 +1,8 @@
 {
-  "name": "step-opsworks-deploy",
+  "name": "dropper",
   "version": "1.0.0",
-  "description": "Deploy OpsWorks apps from Wercker.",
-  "main": "deploy.js",
+  "description": "Deploy things!",
+  "main": "lib/dropper.js",
   "directories": {
     "test": "test"
   },
@@ -10,7 +10,7 @@
     "test": "mocha test/**"
   },
   "bin": {
-    "deploy": "./bin/deploy.js"
+    "dropper": "./bin/dropper.js"
   },
   "devDependencies": {
     "mocha": "2.0.1",
@@ -19,14 +19,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/grampajoe/step-opsworks-deploy.git"
+    "url": "https://github.com/grampajoe/dropper.git"
   },
   "author": "Joe Friedl",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/grampajoe/step-opsworks-deploy/issues"
+    "url": "https://github.com/grampajoe/dropper/issues"
   },
-  "homepage": "https://github.com/grampajoe/step-opsworks-deploy",
+  "homepage": "https://github.com/grampajoe/dropper",
   "dependencies": {
     "aws-sdk": "^2.0.29",
     "yargs": "^1.3.3"
