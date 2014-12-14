@@ -21,7 +21,7 @@
     "type": "git",
     "url": "https://github.com/grampajoe/dropper.git"
   },
-  "author": "Joe Friedl",
+  "author": "Joe Friedl <joe@joefriedl.net>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/grampajoe/dropper/issues"
