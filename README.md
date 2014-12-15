@@ -23,6 +23,10 @@ $ dropper opsworks --stack-id STRING --app-id STRING
 
 #### Options
 
+- `--access-key-id STRING` (required) AWS access key. Can be provided by the
+  `AWS_ACCESS_KEY_ID` environment variable.
+- `--secret-access-key STRING` (required) AWS secret key. Can be provided by
+the `AWS_SECRET_ACCESS_KEY` environment variable.
 - `--stack-id STRING` (required) OpsWorks stack ID.
 - `--app-id STRING` (required) OpsWorks app ID.
 - `--migrate` (optional) Enable migrations.
