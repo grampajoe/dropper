@@ -2,6 +2,9 @@
 
 Deploy things!
 
+[![Wercker](http://img.shields.io/wercker/ci/548e2bbd6b3ba8733d73de03.svg?style=flat)](https://app.wercker.com/project/bykey/352085a3388f20219a49083723194d0d)
+[![npm](http://img.shields.io/npm/v/dropper.svg?style=flat)](https://www.npmjs.com/package/dropper)
+
 ## Installing
 
 ```bash
