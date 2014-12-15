@@ -29,6 +29,8 @@ $ dropper opsworks --stack-id STRING --app-id STRING
 the `AWS_SECRET_ACCESS_KEY` environment variable.
 - `--stack-id STRING` (required) OpsWorks stack ID.
 - `--app-id STRING` (required) OpsWorks app ID.
+- `--region STRING` (required) AWS region. Default is `us-east-1`. Can be
+provided by the `AWS_DEFAULT_REGION` environment variable.
 - `--migrate` (optional) Enable migrations.
 - `--comment STRING` (optional) Comment for the deployment.
 
