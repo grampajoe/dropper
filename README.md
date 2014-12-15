@@ -3,6 +3,7 @@
 Deploy things!
 
 [![wercker status](https://app.wercker.com/status/352085a3388f20219a49083723194d0d/s "wercker status")](https://app.wercker.com/project/bykey/352085a3388f20219a49083723194d0d)
+[![npm](http://img.shields.io/npm/v/dropper.svg)](https://www.npmjs.com/package/dropper)
 
 ## Installing
 
