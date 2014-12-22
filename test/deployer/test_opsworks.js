@@ -220,7 +220,7 @@ describe('OpsWorksDeployer', function() {
       var err = 'error!!!!';
 
       this.deployer.on('done', function(err) {
-        err.should.equal(err);
+        err.should.match(/error/);
         done();
       });
 
@@ -306,7 +306,7 @@ describe('OpsWorksDeployer', function() {
       };
 
       this.deployer.on('error', function(err) {
-        err.should.eql('whoops');
+        err.should.match(/whoops/);
         done();
       });
 
@@ -419,7 +419,7 @@ describe('OpsWorksDeployer', function() {
       };
 
       this.deployer.on('error', function(err) {
-        err.should.eql('oh no');
+        err.should.match(/oh no/);
         done();
       });
 
@@ -432,7 +432,7 @@ describe('OpsWorksDeployer', function() {
       };
 
       this.deployer.on('error', function(err) {
-        err.should.eql('oh no');
+        err.should.match(/oh no/);
         done();
       });
 
