@@ -2,18 +2,19 @@ var should = require('should'),
     sinon = require('sinon'),
     shared = require('./shared'),
     Deployer = require('../../lib/deployer'),
+    OpsWorksDeployer = require('../../lib/deployer/opsworks'),
     AWS = require('aws-sdk');
 
 describe('OpsWorksDeployer', function() {
   beforeEach(function() {
-    this.deployer = Deployer.get('opsworks');
-    this.cls = 'OpsWorksDeployer';
     this.required = {
       'accessKeyId': 'access-key-id',
       'secretAccessKey': 'secret-access-key',
       'stackId': 'stack-id',
       'appId': 'app-id',
     };
+    this.deployer = Deployer.get('opsworks', this.required);
+    this.cls = 'OpsWorksDeployer';
 
     this.defaults = this.deployer.cleanOptions(this.required);
     this.OpsWorksStub = sinon.stub(AWS, 'OpsWorks');
@@ -40,6 +41,24 @@ describe('OpsWorksDeployer', function() {
   });
 
   shared.itShouldBeADeployer();
+
+  describe('constructor', function() {
+    beforeEach(function() {
+      sinon.stub(OpsWorksDeployer.prototype, 'cleanOptions').returns(
+        {'cleaned': 'options'}
+      );
+    });
+
+    afterEach(function() {
+      OpsWorksDeployer.prototype.cleanOptions.restore();
+    });
+
+    it('should store cleaned options', function() {
+      var deployer = new OpsWorksDeployer({'dirty': 'options'});
+
+      deployer.options.should.eql({'cleaned': 'options'});
+    });
+  });
 
   describe('#cleanOptions', function() {
     describe('accessKeyId', function() {
@@ -98,6 +117,7 @@ describe('OpsWorksDeployer', function() {
 
     describe('migrate', function() {
       it('should default to false', function() {
+        debugger;
         this.defaults.migrate.should.equal('false');
       });
 
@@ -121,7 +141,7 @@ describe('OpsWorksDeployer', function() {
 
   describe('#getApi', function() {
     beforeEach(function() {
-      this.options = {
+      this.deployer.options = {
         'accessKeyId': 'access-key-id',
         'secretAccessKey': 'secret-access-key',
         'region': 'region',
@@ -129,13 +149,13 @@ describe('OpsWorksDeployer', function() {
     });
 
     it('should return an AWS.OpsWorks instance', function() {
-      var api = this.deployer.getApi(this.options);
+      var api = this.deployer.getApi();
 
       api.should.be.an.instanceOf(AWS.OpsWorks);
     });
 
     it('should pass in the config', function() {
-      this.deployer.getApi(this.options);
+      this.deployer.getApi();
 
       this.OpsWorksStub.calledWith({
         'accessKeyId': 'access-key-id',
@@ -147,6 +167,7 @@ describe('OpsWorksDeployer', function() {
 
   describe('#getApp', function() {
     beforeEach(function() {
+      this.deployer.options = {'appId': 'app-id'};
       sinon.stub(this.deployer, 'getApi').returns(this.api);
     });
 
@@ -155,34 +176,29 @@ describe('OpsWorksDeployer', function() {
     });
 
     it('should call describeApps', function() {
-      var options = {'appId': 'app-id'};
 
-      this.deployer.getApp(options);
+      this.deployer.getApp();
 
       this.api.describeApps.calledWith({
-        AppIds: [options.appId]
+        AppIds: ['app-id']
       }).should.be.ok;
     });
 
     it('should return an app', function() {
-      var options = {'appId': 'app-id'},
-          app;
-
-      app = this.deployer.getApp(options);
+      var app = this.deployer.getApp();
 
       app.should.eql({'Shortname': 'short-name'});
     });
 
     it('should cache the app', function() {
-      var options = {'appId': 'app-id'},
-          first_app,
+      var first_app,
           second_app;
 
-      first_app = this.deployer.getApp(options);
+      first_app = this.deployer.getApp();
 
       this.api.describeApps.callCount.should.eql(1);
 
-      second_app = this.deployer.getApp(options);
+      second_app = this.deployer.getApp();
 
       this.api.describeApps.callCount.should.eql(1);
       second_app.should.be.exactly(first_app);
@@ -202,16 +218,14 @@ describe('OpsWorksDeployer', function() {
       this.deployer.getApi.restore();
     });
 
-    it('should pass config to getApi', function() {
-      var options = {};
+    it('should call getApi', function() {
+      this.deployer.deploy();
 
-      this.deployer.deploy(options);
-
-      this.deployer.getApi.calledWith(options).should.be.ok;
+      this.deployer.getApi.called.should.be.ok;
     });
 
     it('should create a deployment', function() {
-      this.deployer.deploy({});
+      this.deployer.deploy();
 
       this.api.createDeployment.called.should.be.ok;
     });
@@ -221,12 +235,14 @@ describe('OpsWorksDeployer', function() {
           params,
           callback;
 
-      this.deployer.deploy({
+      this.deployer.options = {
         'stackId': 'stack-id',
         'appId': 'app-id',
         'comment': 'comment',
         'migrate': 'true'
-      });
+      };
+
+      this.deployer.deploy();
 
       args = this.api.createDeployment.getCall(0).args;
       params = args[0];
@@ -245,13 +261,12 @@ describe('OpsWorksDeployer', function() {
     });
 
     it('should pass in the revision', function() {
-      var options = this.required,
-          args,
+      var args,
           attributes;
 
-      options['revision'] = 'revision-123';
+      this.deployer.options['revision'] = 'revision-123';
 
-      this.deployer.deploy(options);
+      this.deployer.deploy();
 
       args = this.api.createDeployment.getCall(0).args;
 
@@ -263,7 +278,7 @@ describe('OpsWorksDeployer', function() {
       var args,
           callback;
 
-      this.deployer.deploy({}, done);
+      this.deployer.deploy(done);
 
       args = this.api.createDeployment.getCall(0).args;
       callback = args[1];
@@ -278,7 +293,7 @@ describe('OpsWorksDeployer', function() {
         done();
       }
 
-      this.deployer.deploy({}, callback);
+      this.deployer.deploy(callback);
 
       args = this.api.createDeployment.getCall(0).args;
       callback = args[1];
