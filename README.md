@@ -38,6 +38,8 @@ provided by the `AWS_DEFAULT_REGION` environment variable.
   revision number, to deploy.
 - `--migrate` (optional) Enable migrations.
 - `--comment STRING` (optional) Comment for the deployment.
+- `--wait-for-deploy` (optional) Waits for deployments to complete before
+  exiting, and reports the result.
 
 #### Permissions
 
