@@ -12,6 +12,16 @@ describe('$ deploy', function() {
 
   beforeEach(function() {
     deployStub.reset();
+
+    sinon.stub(console, 'error');
+    sinon.stub(console, 'info');
+    sinon.stub(process, 'exit');
+  });
+
+  afterEach(function() {
+    console.error.restore();
+    console.info.restore();
+    process.exit.restore();
   });
 
   describe('deployer', function() {
@@ -21,9 +31,11 @@ describe('$ deploy', function() {
         '/path/to/deploy.js',
       ];
 
-      (function() {
-        cli(options, deployStub);
-      }).should.throw(/deployer is required/i);
+      cli(options, deployStub);
+
+      debugger;
+      console.error.getCall(0).args[0].should.match(/Deployer is required./);
+      process.exit.calledWith(1).should.be.ok;
     });
   });
 
@@ -61,14 +73,25 @@ describe('$ deploy', function() {
     deployStub.getCall(0).args[2].should.eql(callback);
   });
 
-  it('should raise errors from the callback', function() {
+  it('should exit with a failed status on errors', function() {
     var callback;
 
     cli(requiredOptions, deployStub);
     callback = deployStub.getCall(0).args[2];
 
-    (function() {
-      callback('Error!');
-    }).should.throw('Error!');
+    callback('Error!')
+
+    process.exit.calledWith(1).should.be.ok;
+  });
+
+  it('should log errors', function() {
+    var callback;
+
+    cli(requiredOptions, deployStub);
+    callback = deployStub.getCall(0).args[2];
+
+    callback('Error!')
+
+    console.error.getCall(0).args[0].should.match(/error/i);
   });
 });

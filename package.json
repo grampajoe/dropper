@@ -29,6 +29,7 @@
   "homepage": "https://github.com/grampajoe/dropper",
   "dependencies": {
     "aws-sdk": "^2.0.29",
+    "colors": "^1.0.3",
     "yargs": "^1.3.3"
   }
 }

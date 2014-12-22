@@ -41,24 +41,30 @@ describe('Deployer', function() {
 
       Deployer._deployers['butt'].should.equal(deployer);
     });
-  });
 
-  describe('#cleanOptions', function() {
-    it('should do nothing', function() {
-      var deployer = new Deployer(),
-          cleaned;
+    it('should automatically subclass itself', function() {
+      var deployer;
 
-      cleaned = deployer.cleanOptions({'butt': 'fart'});
+      function FakeDeployer() {}
 
-      cleaned.should.eql({'butt': 'fart'});
+      Deployer.register('fake', FakeDeployer);
+
+      deployer = Deployer.get('fake');
+
+      deployer.should.be.an.instanceOf(Deployer);
     });
   });
 
   describe('#deploy', function() {
-    it('should raise a not implemented exception', function() {
+    it('should emit a not implemented error', function(done) {
       var deployer = new Deployer();
 
-      deployer.deploy.should.throw(/not implemented/i);
+      deployer.on('error', function(err) {
+        err.should.match(/not implemented/i);
+        done();
+      });
+
+      deployer.deploy();
     });
   });
 });

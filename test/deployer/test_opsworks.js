@@ -35,24 +35,6 @@ describe('OpsWorksDeployer', function() {
 
   shared.itShouldBeADeployer();
 
-  describe('constructor', function() {
-    beforeEach(function() {
-      sinon.stub(OpsWorksDeployer.prototype, 'cleanOptions').returns(
-        {'cleaned': 'options'}
-      );
-    });
-
-    afterEach(function() {
-      OpsWorksDeployer.prototype.cleanOptions.restore();
-    });
-
-    it('should store cleaned options', function() {
-      var deployer = new OpsWorksDeployer({'dirty': 'options'});
-
-      deployer.options.should.eql({'cleaned': 'options'});
-    });
-  });
-
   describe('#cleanOptions', function() {
     describe('accessKeyId', function() {
       beforeEach(function() {
@@ -238,7 +220,7 @@ describe('OpsWorksDeployer', function() {
       var err = 'error!!!!';
 
       this.deployer.on('done', function(err) {
-        err.should.equal(err);
+        err.should.match(/error/);
         done();
       });
 
@@ -297,7 +279,6 @@ describe('OpsWorksDeployer', function() {
       var deployments = [
             {'Status': 'successful'},
             {'Status': 'running'},
-            {'Status': 'running'}
           ],
           api = this.api;
 
@@ -311,7 +292,7 @@ describe('OpsWorksDeployer', function() {
       });
 
       this.deployer.on('done', function() {
-        api.describeDeployments.callCount.should.eql(3);
+        api.describeDeployments.callCount.should.eql(2);
         done();
       });
 
@@ -324,7 +305,7 @@ describe('OpsWorksDeployer', function() {
       };
 
       this.deployer.on('error', function(err) {
-        err.should.eql('whoops');
+        err.should.match(/whoops/);
         done();
       });
 
@@ -350,6 +331,21 @@ describe('OpsWorksDeployer', function() {
       this.deployer.getApi.restore();
     });
 
+    it('should clean options', function() {
+      var deployer = new OpsWorksDeployer({'dirty': 'options'});
+
+      sinon.stub(deployer, 'getApp');
+      sinon.stub(deployer, 'cleanOptions').returns(
+        {'cleaned': 'options'}
+      );
+
+      deployer.options.should.eql({'dirty': 'options'});
+
+      deployer.deploy();
+
+      deployer.options.should.eql({'cleaned': 'options'});
+    });
+
     it('should create a deployment', function() {
       this.deployer.deploy();
 
@@ -362,6 +358,8 @@ describe('OpsWorksDeployer', function() {
           callback;
 
       this.deployer.options = {
+        'accessKeyId': '123',
+        'secretAccessKey': '123',
         'stackId': 'stack-id',
         'appId': 'app-id',
         'comment': 'comment',
@@ -399,7 +397,7 @@ describe('OpsWorksDeployer', function() {
       };
 
       this.api.createDeployment = function(args, callback) {
-        callback();
+        callback(null, {'DeploymentId': '123'});
       };
 
       this.deployer.deploy();
@@ -420,7 +418,7 @@ describe('OpsWorksDeployer', function() {
       };
 
       this.deployer.on('error', function(err) {
-        err.should.eql('oh no');
+        err.should.match(/oh no/);
         done();
       });
 
@@ -433,7 +431,7 @@ describe('OpsWorksDeployer', function() {
       };
 
       this.deployer.on('error', function(err) {
-        err.should.eql('oh no');
+        err.should.match(/oh no/);
         done();
       });
 
