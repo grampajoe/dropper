@@ -20,7 +20,6 @@ describe('OpsWorksDeployer', function() {
     this.OpsWorksStub = sinon.stub(AWS, 'OpsWorks');
 
     this.api = sinon.stub();
-    this.api.createDeployment = sinon.stub();
 
     // Stub out a fake describeApps response using the asynchronous style.
     // See http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/OpsWorks.html#describeApps-property
@@ -111,7 +110,6 @@ describe('OpsWorksDeployer', function() {
 
     describe('migrate', function() {
       it('should default to false', function() {
-        debugger;
         this.defaults.migrate.should.equal('false');
       });
 
@@ -248,12 +246,103 @@ describe('OpsWorksDeployer', function() {
     });
   });
 
+  describe('#waitForDeploy', function() {
+    beforeEach(function() {
+      this.api.describeDeployments = function() {};
+      sinon.stub(this.api, 'describeDeployments');
+      sinon.stub(this.deployer, 'getApi').returns(this.api);
+    });
+
+    it('should call describeDeployments', function() {
+      this.deployer.waitForDeploy('123');
+
+      this.api.describeDeployments.calledWith({
+        'DeploymentIds': ['123']
+      }).should.be.ok;
+    });
+
+    it('should send a done event', function(done) {
+      this.api.describeDeployments = function(options, callback) {
+        callback(null, {
+          'Deployments': [{'Status': 'successful'}]
+        });
+      };
+
+      this.deployer.on('done', function() {
+        done();
+      });
+
+      this.deployer.waitForDeploy('123');
+    });
+
+    it('should not send a done event if the deploy failed', function(done) {
+      this.api.describeDeployments = function(options, callback) {
+        callback(null, {
+          'Deployments': [{'Status': 'failed'}]
+        });
+      };
+
+      this.deployer.on('done', function() {
+        done(new Error('Nope!'));
+      });
+
+      this.deployer.on('error', function() {
+        done();
+      });
+
+      this.deployer.waitForDeploy('123');
+    });
+
+    it('should keep waiting if the deployment is running', function(done) {
+      var deployments = [
+            {'Status': 'successful'},
+            {'Status': 'running'},
+            {'Status': 'running'}
+          ],
+          api = this.api;
+
+      this.api.describeDeployments.restore();
+      sinon.stub(this.api, 'describeDeployments', function(options, callback) {
+        var deployment = deployments.pop();
+
+        callback(null, {
+          'Deployments': [deployment]
+        });
+      });
+
+      this.deployer.on('done', function() {
+        api.describeDeployments.callCount.should.eql(3);
+        done();
+      });
+
+      this.deployer.waitForDeploy('123');
+    });
+
+    it('should raise describeDeployments errors', function(done) {
+      this.api.describeDeployments = function(args, callback) {
+        callback('whoops');
+      };
+
+      this.deployer.on('error', function(err) {
+        err.should.eql('whoops');
+        done();
+      });
+
+      this.deployer.waitForDeploy('123');
+    });
+  });
+
   describe('#deploy', function() {
     beforeEach(function() {
       sinon.stub(this.deployer, 'getApi').returns(this.api);
 
       sinon.stub(this.deployer, 'getApp', function(callback) {
         callback(null, {'Shortname': 'short-name'});
+      });
+
+      this.api.createDeployment = function() {};
+      sinon.stub(this.api, 'createDeployment', function(args, callback) {
+        callback(null, {'DeploymentId': 'deployment-id'});
       });
     });
 
@@ -312,6 +401,41 @@ describe('OpsWorksDeployer', function() {
       this.api.createDeployment = function(args, callback) {
         callback();
       };
+
+      this.deployer.deploy();
+    });
+
+    it('should optionally wait for deployments to finish', function() {
+      this.deployer.waitForDeploy = sinon.stub();
+      this.deployer.options.waitForDeploy = true;
+
+      this.deployer.deploy();
+
+      this.deployer.waitForDeploy.calledWith('deployment-id').should.be.ok;
+    });
+
+    it('should raise getApp errors', function(done) {
+      this.deployer.getApp = function(callback) {
+        callback('oh no');
+      };
+
+      this.deployer.on('error', function(err) {
+        err.should.eql('oh no');
+        done();
+      });
+
+      this.deployer.deploy();
+    });
+
+    it('should raise createDeployment errors', function(done) {
+      this.api.createDeployment = function(args, callback) {
+        callback('oh no');
+      };
+
+      this.deployer.on('error', function(err) {
+        err.should.eql('oh no');
+        done();
+      });
 
       this.deployer.deploy();
     });
