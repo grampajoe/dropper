@@ -35,24 +35,6 @@ describe('OpsWorksDeployer', function() {
 
   shared.itShouldBeADeployer();
 
-  describe('constructor', function() {
-    beforeEach(function() {
-      sinon.stub(OpsWorksDeployer.prototype, 'cleanOptions').returns(
-        {'cleaned': 'options'}
-      );
-    });
-
-    afterEach(function() {
-      OpsWorksDeployer.prototype.cleanOptions.restore();
-    });
-
-    it('should store cleaned options', function() {
-      var deployer = new OpsWorksDeployer({'dirty': 'options'});
-
-      deployer.options.should.eql({'cleaned': 'options'});
-    });
-  });
-
   describe('#cleanOptions', function() {
     describe('accessKeyId', function() {
       beforeEach(function() {
@@ -350,6 +332,21 @@ describe('OpsWorksDeployer', function() {
       this.deployer.getApi.restore();
     });
 
+    it('should clean options', function() {
+      var deployer = new OpsWorksDeployer({'dirty': 'options'});
+
+      sinon.stub(deployer, 'getApp');
+      sinon.stub(deployer, 'cleanOptions').returns(
+        {'cleaned': 'options'}
+      );
+
+      deployer.options.should.eql({'dirty': 'options'});
+
+      deployer.deploy();
+
+      deployer.options.should.eql({'cleaned': 'options'});
+    });
+
     it('should create a deployment', function() {
       this.deployer.deploy();
 
@@ -362,6 +359,8 @@ describe('OpsWorksDeployer', function() {
           callback;
 
       this.deployer.options = {
+        'accessKeyId': '123',
+        'secretAccessKey': '123',
         'stackId': 'stack-id',
         'appId': 'app-id',
         'comment': 'comment',

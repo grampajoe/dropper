@@ -17,15 +17,19 @@ exports.itShouldBeADeployer = function() {
 // Options
 
 exports.itShouldBeRequired = function() {
-  it('should be required', function() {
+  it('should be required', function(done) {
     var deployer = this.deployer,
-        options = this.required;
+        options = this.required,
+        flag = this.flag;
 
     delete options[this.name];
 
-    (function() {
-      deployer.cleanOptions(options);
-    }).should.throw(new RegExp(this.flag + ' is required'));
+    deployer.on('error', function(err) {
+      err.should.match(new RegExp(flag + ' is required'));
+      done();
+    });
+
+    deployer.cleanOptions(options);
   });
 }
 
