@@ -55,7 +55,8 @@ following permissions should be enough:
       "Effect": "Allow",
       "Action": [
         "opsworks:CreateDeployment",
-        "opsworks:DescribeApps"
+        "opsworks:DescribeApps",
+        "opsworks:DescribeDeployments"
       ],
       "Resource": [
         "arn:aws:opsworks:*:*:stack/your-opsworks-stack-id-here/"
