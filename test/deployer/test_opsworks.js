@@ -17,6 +17,22 @@ describe('OpsWorksDeployer', function() {
 
     this.defaults = this.deployer.cleanOptions(this.required);
     this.OpsWorksStub = sinon.stub(AWS, 'OpsWorks');
+
+    this.api = sinon.stub();
+    this.api.createDeployment = sinon.stub();
+
+    // Stub out a fake describeApps response using the synchronous style.
+    // See http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/OpsWorks.html#describeApps-property
+    this.api.describeApps = sinon.stub();
+    this.api.describeApps.returns({
+      'send': function() {
+        return {
+          'data': {
+            'Apps': [{'Shortname': 'short-name'}]
+          }
+        }
+      }
+    });
   });
 
   afterEach(function() {
@@ -129,11 +145,57 @@ describe('OpsWorksDeployer', function() {
     });
   });
 
+  describe('#getApp', function() {
+    beforeEach(function() {
+      sinon.stub(this.deployer, 'getApi').returns(this.api);
+    });
+
+    afterEach(function() {
+      this.deployer.getApi.restore();
+    });
+
+    it('should call describeApps', function() {
+      var options = {'appId': 'app-id'};
+
+      this.deployer.getApp(options);
+
+      this.api.describeApps.calledWith({
+        AppIds: [options.appId]
+      }).should.be.ok;
+    });
+
+    it('should return an app', function() {
+      var options = {'appId': 'app-id'},
+          app;
+
+      app = this.deployer.getApp(options);
+
+      app.should.eql({'Shortname': 'short-name'});
+    });
+
+    it('should cache the app', function() {
+      var options = {'appId': 'app-id'},
+          first_app,
+          second_app;
+
+      first_app = this.deployer.getApp(options);
+
+      this.api.describeApps.callCount.should.eql(1);
+
+      second_app = this.deployer.getApp(options);
+
+      this.api.describeApps.callCount.should.eql(1);
+      second_app.should.be.exactly(first_app);
+    });
+  });
+
   describe('#deploy', function() {
     beforeEach(function() {
-      this.api = sinon.stub();
-      this.api.createDeployment = sinon.stub();
       sinon.stub(this.deployer, 'getApi').returns(this.api);
+
+      sinon.stub(this.deployer, 'getApp').returns({
+        'Shortname': 'short-name'
+      });
     });
 
     afterEach(function() {
@@ -180,6 +242,21 @@ describe('OpsWorksDeployer', function() {
         AppId: 'app-id',
         Comment: 'comment'
       });
+    });
+
+    it('should pass in the revision', function() {
+      var options = this.required,
+          args,
+          attributes;
+
+      options['revision'] = 'revision-123';
+
+      this.deployer.deploy(options);
+
+      args = this.api.createDeployment.getCall(0).args;
+
+      attributes = JSON.parse(args[0].CustomJson);
+      attributes.deploy['short-name'].scm.revision.should.eql('revision-123');
     });
 
     it('should call the callback', function(done) {

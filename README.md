@@ -34,6 +34,8 @@ the `AWS_SECRET_ACCESS_KEY` environment variable.
 - `--app-id STRING` (required) OpsWorks app ID.
 - `--region STRING` (required) AWS region. Default is `us-east-1`. Can be
 provided by the `AWS_DEFAULT_REGION` environment variable.
+- `--revision STRING` (optional) A revision, e.g. a git ref or subversion
+  revision number, to deploy.
 - `--migrate` (optional) Enable migrations.
 - `--comment STRING` (optional) Comment for the deployment.
 
