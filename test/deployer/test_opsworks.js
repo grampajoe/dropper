@@ -279,7 +279,6 @@ describe('OpsWorksDeployer', function() {
       var deployments = [
             {'Status': 'successful'},
             {'Status': 'running'},
-            {'Status': 'running'}
           ],
           api = this.api;
 
@@ -293,7 +292,7 @@ describe('OpsWorksDeployer', function() {
       });
 
       this.deployer.on('done', function() {
-        api.describeDeployments.callCount.should.eql(3);
+        api.describeDeployments.callCount.should.eql(2);
         done();
       });
 
@@ -398,7 +397,7 @@ describe('OpsWorksDeployer', function() {
       };
 
       this.api.createDeployment = function(args, callback) {
-        callback();
+        callback(null, {'DeploymentId': '123'});
       };
 
       this.deployer.deploy();
