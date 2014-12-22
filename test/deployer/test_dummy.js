@@ -11,8 +11,10 @@ describe('DummyDeployer', function() {
   shared.itShouldBeADeployer();
 
   describe('#deploy', function() {
-    it('should call the callback', function(done) {
-      this.deployer.deploy(done);
+    it('should fire a done event', function(done) {
+      this.deployer.on('done', done);
+
+      this.deployer.deploy();
     });
   });
 

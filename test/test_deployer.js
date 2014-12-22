@@ -1,8 +1,15 @@
 var should = require('should'),
     sinon = require('sinon'),
-    Deployer = require('../lib/deployer');
+    Deployer = require('../lib/deployer'),
+    EventEmitter = require('events').EventEmitter;
 
 describe('Deployer', function() {
+  it('should be an event emitter', function() {
+    var deployer = new Deployer();
+
+    deployer.should.be.an.instanceOf(EventEmitter);
+  });
+
   describe('.get', function() {
     it('should return a deployer', function() {
       var deployer;
