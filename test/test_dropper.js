@@ -4,21 +4,22 @@ var should = require('should'),
     Deployer = require('../lib/deployer');
 
 describe('deploy', function() {
-  it('should call deployer.deploy', function() {
+  it('should call deployer.deploy', function(done) {
     var options = {'hello': 'hi'},
         callback = sinon.stub(),
         cleaned = {'cleaned': 'options'};
 
-    function FakeDeployer() {};
+    function FakeDeployer(passed_options) {
+      passed_options.should.eql(options);
+      done();
+    };
+
     FakeDeployer.prototype.deploy = sinon.stub();
-    FakeDeployer.prototype.cleanOptions = sinon.stub()
-      .returns(cleaned);
     Deployer.register('fake', FakeDeployer);
 
     deploy('fake', options, callback);
 
-    new FakeDeployer().deploy.calledWith(
-      cleaned,
+    FakeDeployer.prototype.deploy.calledWith(
       callback
     ).should.be.ok;
   });
