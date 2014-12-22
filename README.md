@@ -65,6 +65,110 @@ following permissions should be enough:
 }
 ```
 
+## Extending
+
+Platform support is implemented through a `Deployer`. Each deployer lives in
+its own module inside [`lib/deployer/`](lib/deployer).
+
+Here's a working example:
+
+```javascript
+// In lib/deployer/cloudinator.js
+function CloudinatorDeployer(options) {
+    this.options = options;
+}
+
+CloudinatorDeployer.prototype.cloudinate = function() {
+    // The cloud is very unpredictable
+    return Math.random() > 0.4;
+}
+
+CloudinatorDeployer.prototype.deploy = function() {
+    console.log('Cloudinating...');
+
+    if (this.cloudinate()) {
+        this.emit('done');
+    } else {
+        this.emit('error', 'Cloudination failed!');
+    }
+}
+
+exports = module.exports = CloudinatorDeployer;
+
+// In lib/deployer.js
+Deployer.register('cloudinator', require('./deployer/cloudinator'));
+```
+
+### Registering
+
+Deployers need to be registered on the main `Deployer` class:
+
+```javascript
+// In lib/deployer/cloudinator.js
+function CloudinatorDeployer(options) {}
+
+exports = module.exports = CloudinatorDeployer;
+
+// In lib/deployer.js, all the way at the bottom
+Deployer.register('cloudinator', require('./deployer/cloudinator'));
+```
+
+After registering, you can call `dropper cloudinator` to use your deployer.
+
+### Events
+
+Deployers are event emitters, and dropper handles a few special events:
+
+- `done` events signal that a deploy has successfully completed. Every
+  deployer must emit this event when it's done.
+- `error` events signal a fatal error and cause dropper to exit immediately
+  with a failed status.
+
+```javascript
+CloudinatorDeployer.prototype.deploy = function() {
+    if (this.cloudinate()) {
+        this.emit('done');
+    } else {
+        this.emit('error', 'Cloudination failed!');
+    }
+}
+```
+
+### Command Line Arguments
+
+Deployers are instantiated with an object containing command line arguments.
+Option names are converted from `--lower-case-with-dashes` to `camelCase`.
+
+```javascript
+function CloudinatorDeployer(options) {
+    // --fail-loudly
+    if (options.failLoudly) {
+        this.emit('error', 'BOOM');
+    }
+
+    // --deploy-target production
+    if (options.deployTarget == 'production') {
+        console.warn('omg r u sure');
+    }
+
+    // Save the options for later
+    this.options = options;
+}
+```
+
+### Deploying
+
+Each deployer must implement the `deploy` method, which is called without
+arguments. The `deploy` method is the entry point to the deployer, and should
+emit either a `done` or an `error` event.
+
+```javascript
+CloudinatorDeployer.prototype.deploy = function() {
+    // Deploy things!
+    this.emit('done');
+}
+```
+
 ## Tests
 
 To run the tests:
@@ -78,7 +182,8 @@ $ npm test
 
 1. Fork the [GitHub repo](https://github.com/grampajoe/dropper).
 2. Check out a feature branch, e.g. `cool-new-thing`.
-3. Write tests!
+3. Write tests! Pull requests won't be accepted without reasonable test
+   coverage.
 4. Write code!
 5. Open a pull request on GitHub.
 
