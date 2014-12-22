@@ -39,6 +39,30 @@ provided by the `AWS_DEFAULT_REGION` environment variable.
 - `--migrate` (optional) Enable migrations.
 - `--comment STRING` (optional) Comment for the deployment.
 
+#### Permissions
+
+It's recommended to create an [IAM](http://aws.amazon.com/iam/) user with
+just enough permissions to perform the actions required to deploy an app.
+following permissions should be enough:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "opsworks:CreateDeployment",
+        "opsworks:DescribeApps"
+      ],
+      "Resource": [
+        "arn:aws:opsworks:*:*:stack/your-opsworks-stack-id-here/"
+      ]
+    }
+  ]
+}
+```
+
 ## Tests
 
 To run the tests:
