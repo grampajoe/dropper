@@ -34,8 +34,34 @@ the `AWS_SECRET_ACCESS_KEY` environment variable.
 - `--app-id STRING` (required) OpsWorks app ID.
 - `--region STRING` (required) AWS region. Default is `us-east-1`. Can be
 provided by the `AWS_DEFAULT_REGION` environment variable.
+- `--revision STRING` (optional) A revision, e.g. a git ref or subversion
+  revision number, to deploy.
 - `--migrate` (optional) Enable migrations.
 - `--comment STRING` (optional) Comment for the deployment.
+
+#### Permissions
+
+It's recommended to create an [IAM](http://aws.amazon.com/iam/) user with
+just enough permissions to perform the actions required to deploy an app.
+following permissions should be enough:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "opsworks:CreateDeployment",
+        "opsworks:DescribeApps"
+      ],
+      "Resource": [
+        "arn:aws:opsworks:*:*:stack/your-opsworks-stack-id-here/"
+      ]
+    }
+  ]
+}
+```
 
 ## Tests
 

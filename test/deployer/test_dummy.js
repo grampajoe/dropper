@@ -4,15 +4,23 @@ var should = require('should'),
 
 describe('DummyDeployer', function() {
   beforeEach(function() {
-    this.deployer = Deployer.get('dummy');
+    this.deployer = Deployer.get('dummy', {'option': 'value'});
     this.cls = 'DummyDeployer';
   });
 
   shared.itShouldBeADeployer();
 
   describe('#deploy', function() {
-    it('should call the callback', function(done) {
-      this.deployer.deploy({}, done);
+    it('should fire a done event', function(done) {
+      this.deployer.on('done', done);
+
+      this.deployer.deploy();
+    });
+  });
+
+  describe('#options', function() {
+    it('should store options from the constructor', function() {
+      this.deployer.options.should.eql({'option': 'value'})
     });
   });
 });

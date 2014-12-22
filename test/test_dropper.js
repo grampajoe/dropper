@@ -1,25 +1,28 @@
 var should = require('should'),
     sinon = require('sinon'),
     deploy = require('../lib/dropper'),
-    Deployer = require('../lib/deployer');
+    Deployer = require('../lib/deployer'),
+    EventEmitter = require('events').EventEmitter;
 
 describe('deploy', function() {
-  it('should call deployer.deploy', function() {
-    var options = {'hello': 'hi'},
-        callback = sinon.stub(),
-        cleaned = {'cleaned': 'options'};
+  it('should call deployer.deploy', function(done) {
+    var options = {'hello': 'hi'};
 
-    function FakeDeployer() {};
-    FakeDeployer.prototype.deploy = sinon.stub();
-    FakeDeployer.prototype.cleanOptions = sinon.stub()
-      .returns(cleaned);
+    function callback() {
+      done();
+    }
+
+    function FakeDeployer(passed_options) {
+      passed_options.should.eql(options);
+    };
+
+    FakeDeployer.prototype.__proto__ = EventEmitter.prototype;
+    FakeDeployer.prototype.deploy = function() {
+      this.emit('done');
+    }
+
     Deployer.register('fake', FakeDeployer);
 
     deploy('fake', options, callback);
-
-    new FakeDeployer().deploy.calledWith(
-      cleaned,
-      callback
-    ).should.be.ok;
   });
 });

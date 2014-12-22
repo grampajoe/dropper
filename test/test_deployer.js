@@ -1,16 +1,29 @@
 var should = require('should'),
     sinon = require('sinon'),
-    Deployer = require('../lib/deployer');
+    Deployer = require('../lib/deployer'),
+    EventEmitter = require('events').EventEmitter;
 
 describe('Deployer', function() {
+  it('should be an event emitter', function() {
+    var deployer = new Deployer();
+
+    deployer.should.be.an.instanceOf(EventEmitter);
+  });
+
   describe('.get', function() {
     it('should return a deployer', function() {
-      function FakeDeployer() {
+      var deployer;
+
+      function FakeDeployer(options) {
+        this.options = options;
       }
 
-      Deployer._deployers['butt'] = FakeDeployer;
+      Deployer.register('butt', FakeDeployer);
 
-      Deployer.get('butt').should.be.an.instanceOf(FakeDeployer);
+      deployer = Deployer.get('butt', {'option': 'value'})
+
+      deployer.should.be.an.instanceOf(FakeDeployer);
+      deployer.options.should.eql({'option': 'value'});
     });
 
     it('should throw an error for missing deployers', function() {
