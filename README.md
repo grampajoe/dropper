@@ -123,6 +123,9 @@ Deployers are event emitters, and dropper handles a few special events:
   deployer must emit this event when it's done.
 - `error` events signal a fatal error and cause dropper to exit immediately
   with a failed status.
+  
+  > Error events should not be emitted in the constructor,
+  > because they won't have a handler registered.
 
 ```javascript
 CloudinatorDeployer.prototype.deploy = function() {
