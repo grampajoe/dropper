@@ -26,17 +26,20 @@ describe('deploy', function() {
     deploy('fake', options, callback);
   });
 
-  it('should raise errors', function() {
+  it('should send errors to the callback', function(done) {
+    var error = new Error('oh no!');
+
     function FakeDeployer() {}
     FakeDeployer.prototype.__proto__ = EventEmitter.prototype;
     FakeDeployer.prototype.deploy = function() {
-      this.emit('error', new Error('oh no!'));
+      this.emit('error', error);
     };
 
     Deployer.register('fake', FakeDeployer);
 
-    (function() {
-      deploy('fake', {}, function() {});
-    }).should.throw(/oh no/);
+    deploy('fake', {}, function(err) {
+      err.should.equal(error);
+      done();
+    });
   });
 });
