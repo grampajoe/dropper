@@ -1,3 +1,9 @@
+### 1.1.0
+
+- Improve documentation and error handling.
+- Add a --wait-for-deploy option for OpsWorks.
+- Add a --revision option for OpsWorks.
+
 ### 1.0.2
 
 - Add npm publish deploy step for Wercker.
