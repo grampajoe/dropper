@@ -301,9 +301,13 @@ describe('OpsWorksDeployer', function() {
 
     it('should pass deployer.done as the callback', function(done) {
       var args,
-          callback;
+          callback,
+          deployer = this.deployer;
 
-      this.deployer.done = done;
+      this.deployer.done = function() {
+        this.should.equal(deployer);
+        done();
+      };
 
       this.api.createDeployment = function(args, callback) {
         callback();
