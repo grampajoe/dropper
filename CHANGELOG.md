@@ -1,3 +1,7 @@
+### 1.1.1
+
+- Update deprecated use of util.print.
+
 ### 1.1.0
 
 - Improve documentation and error handling.
